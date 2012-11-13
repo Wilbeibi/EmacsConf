@@ -1,0 +1,349 @@
+(custom-set-variables
+  ;; custom-set-variables was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ '(column-number-mode t)
+ '(display-time-mode t)
+ '(inhibit-startup-screen t)
+;; '(org-agenda-files (quote ("~/HardWay/ORG/sanbox.org")))
+)
+(custom-set-faces
+  ;; custom-set-faces was added by Custom.
+  ;; If you edit it by hand, you could mess it up, so be careful.
+  ;; Your init file should contain only one such instance.
+  ;; If there is more than one, they won't work right.
+ )
+
+;;设置emacs扩展目录位置
+(add-to-list 'load-path"~/.emacs.d/plugins")
+
+;;设置背景和前景,主题在M-x color-theme-select中选择
+(require 'color-theme)
+(color-theme-oswald)
+
+;;设置默认字体
+(set-default-font "Monaco-12")
+
+;;去掉图标栏
+(tool-bar-mode 0)
+
+;;去掉滚动栏
+(scroll-bar-mode nil)
+
+;;语法加亮
+(global-font-lock-mode t) 
+
+;;显示行号
+(require 'linum)
+(global-linum-mode 1)    
+
+;;行跳转
+(global-set-key   [f5]   'goto-line) 
+
+;;括号匹配高亮
+(show-paren-mode 1)
+
+;;直接打开显示图片
+(auto-image-file-mode) 
+
+
+;;设置个人信息
+(setq user-full-name "Wilbeibi")
+(setq user-mail-address "wilbeibi@gmail.com")
+
+;;在标题栏显示buffer名字
+(setq frame-title-format "%b")
+
+;;Make text mode the default major mode and start auto-fill mode 
+;;automatically each time you enter Emacs
+(setq default-major-mode 'text-mode)
+(add-hook 'text-mode-hook 'turn-on-auto-fill)
+
+;;显示光标位置
+(setq column-number-mode t)
+(setq line-number-mode t)
+
+;;通过外界复制粘贴
+(setq x-select-enable-clipboard t)
+(setq interprogram-paste-function 'x-cut-buffer-or-selection-value)
+
+;;用滚轴鼠标
+(mouse-wheel-mode t)
+ 
+;;yasnippet自动补全
+(add-to-list 'load-path
+             "~/.emacs.d/plugins/yasnippet-0.6.1c")
+(require 'yasnippet) ;; not yasnippet-bundle
+(yas/initialize)
+(yas/load-directory "~/.emacs.d/plugins/yasnippet-0.6.1c/snippets")         
+
+;;autocomplete
+;; TAB to expand and select
+;; M-p and M-n to select
+;; RET to complete
+;; Help in other buffer by f1
+;; Binding other key (define-key ac-mode-map (kbd "M-TAB") 'autocomplete)  
+(add-to-list 'load-path "~/.emacs.d/plugins")
+(require 'auto-complete-config)
+(add-to-list 'ac-dictionary-directories "~/.emacs.d/plugins/ac-dict")
+(ac-config-default)
+
+;;----------yasnippet & autocomplete-----------------------------
+(defun ac-yasnippet-candidate ()
+  (let ((table (yas/get-snippet-tables major-mode)))
+    (if table
+      (let (candidates (list))
+            (mapcar (lambda (mode)          
+              (maphash (lambda (key value)    
+                (push key candidates))          
+              (yas/snippet-table-hash mode))) 
+            table)
+        (all-completions ac-prefix candidates)))))
+
+(defface ac-yasnippet-candidate-face
+  '((t (:background "sandybrown" :foreground "black")))
+  "Face for yasnippet candidate.")
+
+(defface ac-yasnippet-selection-face
+  '((t (:background "coral3" :foreground "white"))) 
+  "Face for the yasnippet selected candidate.")
+
+(defvar ac-source-yasnippet
+  '((candidates . ac-yasnippet-candidate)
+    (action . yas/expand)
+    (limit . 3)
+    (candidate-face . ac-yasnippet-candidate-face)
+    (selection-face . ac-yasnippet-selection-face)) 
+  "Source for Yasnippet.")
+
+(provide 'auto-complete-yasnippet)
+;;-------------------------------------------------------------------
+
+;;设置C-x m 来Set Mark
+(define-key  global-map  "\C-xm"  'set-mark)
+
+
+;;设置tabbar
+(require 'tabbar)
+(tabbar-mode t)     ;;Tab之间的切换
+(define-prefix-command 'lwindow-map)
+(global-set-key (kbd "<M-up>") 'tabbar-backward-group)
+(global-set-key (kbd "<M-down>") 'tabbar-forward-group)
+(global-set-key (kbd "<M-left>") 'tabbar-backward)
+(global-set-key (kbd "<M-right>") 'tabbar-forward)
+
+;;ido模式，互动打开文件
+(require 'ido)
+(ido-mode t)
+
+;;显示日期时间
+    ;在minibuffer上启动实现显示
+    (display-time-mode 1)
+    ;使用24小时制
+    (setq display-time-24hr-format t)
+    ;时间显示包括日期和具体时间
+    (setq display-time-day-and-date t)
+    ;时间变化率
+    (setq display-time-interval 10)
+(display-time-mode 1)
+
+;;session 记录全局变量
+(require 'session)
+(add-hook 'after-init-hook 'session-initialize)
+
+
+
+;;cc-mode 配置
+(require 'cc-mode)
+(c-set-offset 'inline-open 0)
+(c-set-offset 'friend '-)
+(c-set-offset 'substatement-open 0)
+(defun my-c-mode-common-hook ()
+  (setq tab-width 4 indent-tabs-mode nil)
+  ;hungry-delete and auto-newline
+  (c-toggle-auto-hungry-state 1)
+  ;按键定义
+  (define-key c-mode-base-map [(control \')] 'hs-toggle-hiding)
+  (define-key c-mode-base-map [(return)] 'newline-and-indent)
+  (define-key c-mode-base-map [(meta \')] 'c-indent-command)
+  (define-key c-mode-base-map [(tab)] 'my-indent-or-complete)
+  (define-key c-mode-base-map [(f7)] 'compile)
+  ;;自动填充
+  (semantic-load-enable-code-helpers)
+  (define-key c-mode-base-map [(meta ?/)] 'semantic-ia-complete-symbol-menu)
+
+;;F12跳转到函数定义部分,再Shift-F12跳回
+(global-set-key [f12] 'semantic-ia-fast-jump)
+
+(global-set-key [S-f12]
+                (lambda ()
+                  (interactive)
+                  (if (ring-empty-p (oref semantic-mru-bookmark-ring ring))
+                      (error "Semantic Bookmark ring is currently empty"))
+                  (let* ((ring (oref semantic-mru-bookmark-ring ring))
+                         (alist (semantic-mrub-ring-to-assoc-list ring))
+                         (first (cdr (car alist))))
+                    (if (semantic-equivalent-tag-p (oref first tag)
+                                                   (semantic-current-tag))
+                        (setq first (cdr (car (cdr alist)))))
+                    (semantic-mrub-switch-tags first))))
+
+
+;;预处理设置
+(setq c-macro-shrink-window-flag t)
+(setq c-macro-preprocessor "cpp")
+(setq c-macro-cppflags " ")
+(setq c-macro-prompt-flag t)
+(setq hs-minor-mode t)
+(setq abbrev-mode t)
+)
+(add-hook 'c-mode-common-hook 'my-c-mode-common-hook)
+
+;;默认Linux内核编程风格
+(setq auto-mode-alist (cons '("/usr/src/linux.*/.*\\.[ch]$" . linux-c-mode) 
+                            auto-mode-alist))
+(defun linux-c-mode ()
+  "C mode with ajusted defaults for use with the Linux kernel."
+  (interactive)
+  (c-mode)
+  (c-set-style "K&R")
+  (setq tab-width 4)    ;;默认风格是8个缩进
+  (setq indent-tabs-mode t)
+  (setq c-basic offset 4))    ;;默认风格是8个缩进
+
+;; c-mode 或 cc-mode 下缩进只有4格
+(add-hook 'c-mode-hook
+          '(lambda ()
+             (c-set-style "Stroustrup")))
+
+;;CEDET模式，暂定
+(load-file "~/.emacs.d/site-lisp/cedet-1.0/common/cedet.el")
+(setq semanticdb-project-roots 
+(list
+(expand-file-name "/")))
+
+(defun my-indent-or-complete ()
+  (interactive)
+  (if (looking-at "\\>")
+      (hippie-expand nil)
+    (indent-for-tab-command))
+  )
+ 
+(global-set-key [(control tab)] 'my-indent-or-complete)
+
+(autoload 'senator-try-expand-semantic "senator")
+ 
+(setq hippie-expand-try-functions-list
+      '(
+        senator-try-expand-semantic
+        try-expand-dabbrev
+        try-expand-dabbrev-visible
+        try-expand-dabbrev-all-buffers
+        try-expand-dabbrev-from-kill
+        try-expand-list
+        try-expand-list-all-buffers
+        try-expand-line
+        try-expand-line-all-buffers
+        try-complete-file-name-partially
+        try-complete-file-name
+        try-expand-whole-kill
+        )
+      )
+(define-key c-mode-base-map [(tab)] 'my-indent-or-complete)
+(define-key c-mode-base-map [(meta ?/)] 'semantic-ia-complete-symbol-menu)
+
+;;代码折叠
+(require 'semantic-tag-folding nil 'noerror)
+(global-semantic-tag-folding-mode 1)
+;;代码块的折叠快捷键绑定
+(define-key semantic-tag-folding-mode-map (kbd "C-c , -") 'semantic-tag-folding-fold-block)
+(define-key semantic-tag-folding-mode-map (kbd "C-c , +") 'semantic-tag-folding-show-block)
+;;全部代码的折叠快捷键绑定
+(define-key semantic-tag-folding-mode-map (kbd "C-_") 'semantic-tag-folding-fold-all)
+(define-key semantic-tag-folding-mode-map (kbd "C-+") 'semantic-tag-folding-show-all)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;end cedet;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;;markdown-mode 
+(autoload 'markdown-mode "markdown-mode.el"
+    "Major mode for editing Markdown files" t)
+(setq auto-mode-alist
+    (cons '("\\.md" . markdown-mode) auto-mode-alist))
+    
+    
+;;desktop 打开上次文件记录
+(load "desktop")
+ (desktop-load-default)
+ (desktop-read)
+
+ ;;激活org-mode
+ (require 'org-install)
+ (add-to-list 'auto-mode-alist '("\\.org\\'" . org-mode))
+ (global-set-key "\C-cl" 'org-store-link)
+ (global-set-key "\C-ca" 'org-agenda)
+ (global-set-key "\C-cc" 'org-capture)
+ (global-set-key "\C-cb" 'org-iswitchb)
+;;Set work.org as globle TODO list, and use M-x gtd to call up 
+: (setq org-agenda-files (list "~/org/work.org"))
+ (defun gtd ()
+   (interactive)
+   (find-file "~/org/work.org")
+)
+;Many commands in Org work on the region if the region is 
+;active. To make use of this, you need to have 
+;transient-mark-mode turned on.
+;;这两行先注释，可以去掉
+ (transient-mark-mode 1) ; (zmacs-regions 1) for XEmacs
+ (setq org-log-done t)
+
+;;(setq org-default-notes-file (concat org-directory "/notes.org"))
+;;(define-key global-map "\C-cc" 'org-capture)
+
+
+;;load gdb-many-window
+(setq gdb-many-windows t)
+(load-library "multi-gud.el")
+(load-library "multi-gdb-ui.el")
+
+;; Python-mode
+(require 'python-mode)
+(add-to-list 'auto-mode-alist '("\\.py\\'" . python-mode))
+;ipython
+(require 'ipython)
+;lambda-mode
+(require 'lambda-mode)
+(add-hook 'python-mode-hook #'lambda-mode 1)
+(setq lambda-symbol (string (make-char 'chinese-gb2312)))
+;anything for completion
+(require 'anything)
+(require 'anything-ipython)
+(when (require 'anything-show-completion nil t)
+   (use-anything-show-completion 'anything-ipython-complete
+                                 '(length initial-pattern)))
+;autopair for ()
+(autoload 'autopair-global-mode "autopair" nil t)
+(autopair-global-mode)
+(add-hook 'lisp-mode-hook
+          #'(lambda () (setq autopair-dont-activate t)))
+(require 'python-pep8)
+(require 'python-pylint)
+;;------------------end python configure-------------------
+
+;;读代码xcscope配置
+(require 'xcscope)
+
+;;Mark Set改成 F2
+(global-set-key [(f2)] 'set-mark-command)
+
+;;防止页面滚动时跳动，可在靠近屏幕边沿3行时就开始滚动
+(setq scroll-margin 1 scroll-conservatively 10000)
+
+;;w3m
+(add-to-list 'load-path "~/.emacs.d/plugins/emacs-w3m-1.4.4")
+(require 'w3m-load)
+(require 'w3m-e21)
+(provide 'w3m-e23)
+(setq w3m-use-favicon nil)
+(setq w3m-command-arguments '("-cookie" "-F"))
+(setq w3m-use-cookies t)
+(setq w3m-home-page "http://www.google.com")
